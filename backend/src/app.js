@@ -17,6 +17,12 @@ app.use(express.static("public"))
 
 
 //Routes
+import userRouter from "./routes/user.routes.js"
+import chequeRouter from "./routes/cheque.routes.js"
+
+app.use("/api/users", userRouter);
+app.use("/api/cheques", chequeRouter);
+
 
 
 export { app }

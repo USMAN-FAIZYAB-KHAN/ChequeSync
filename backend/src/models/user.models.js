@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 
 const Schema = mongoose.Schema;
 
-const userTypes = ['member', 'branch_manager', 'cheque_manager'];
+const userTypes = ['member', 'branchManager', 'chequeManager'];
 
 const userSchema = new Schema({
     firstName: { type: String, required: true },
@@ -14,7 +14,7 @@ const userSchema = new Schema({
     password: { type: String, required: true },
     refreshToken: { type: String, default: null },
     type: { type: String, required: true, enum: userTypes },
-});
+}, { timestamps: true });
 
 // Hash the password before saving the user
 userSchema.pre("save", async function (next) {
@@ -40,11 +40,11 @@ userSchema.methods.generateAccessToken = function () {
     return jwt.sign(
         {
             _id: this._id,
-            userName: this.userName
+            userName: this.userName,
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
-            expiresIn: process.env.ACCESS_TOKEN_EXPIRY // Corrected here
+            expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
         }
     );
 };
@@ -57,7 +57,7 @@ userSchema.methods.generateRefreshToken = function () {
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
-            expiresIn: process.env.REFRESH_TOKEN_EXPIRY, // Corrected here
+            expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
         }
     );
 };
