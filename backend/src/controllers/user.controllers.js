@@ -2,6 +2,7 @@ import User from '../models/user.models.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { ApiError } from '../utils/ApiError.js';
+import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshToken = async (userID) => {
     try {
@@ -29,6 +30,7 @@ const generateAccessAndRefreshToken = async (userID) => {
 // Create a new user
 export const registerUser = asyncHandler(async (req, res) => {
     const { userName, firstName, lastName, phoneNo, password, type } = req.body;
+    console.log(userName, firstName, lastName, phoneNo, password, type)
 
     // Check if any required field is missing or empty
     if ([userName, firstName, lastName, phoneNo, password, type].some((field) => field?.trim() === "")) {
@@ -41,7 +43,11 @@ export const registerUser = asyncHandler(async (req, res) => {
     });
 
     if (userExist) {
-        throw new ApiError(409, "User with username already exists");
+        return res.status(409).json({
+            success: false,
+            message: "exists"
+        });
+
     }
 
     // Create the user
@@ -58,13 +64,19 @@ export const registerUser = asyncHandler(async (req, res) => {
     const createUser = await User.findById(user._id).select("-password -refreshToken");
 
     if (!createUser) {
-        throw new ApiError(500, "Something went wrong while creating User");
+        return res.status(409).json({
+            success: false,
+            message: "wrong"
+        });
     }
+
+    console.log(createUser)
 
     // Respond with success
     return res.status(201).json(
         new ApiResponse(201, createUser, "User Created Successfully")
     );
+
 });
 
 // Login a user
@@ -80,23 +92,32 @@ export const loginUser = asyncHandler(async (req, res) => {
     })
 
     if (!user) {
-        throw new ApiError(404, "User does not exist")
+        return res.status(409).json({
+            success: false,
+            message: "not_exists"
+        });
     }
 
     const isPasswordValid = await user.isPasswordCorrect(password)
     if (!isPasswordValid) {
-        throw new ApiError(401, "Invalid User Credentials")
+        return res.status(409).json({
+            success: false,
+            message: "inv_cred"
+        });
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+
+    const typeUser = await jwt.decode(refreshToken)?.type
+    console.log(typeUser)
 
     return res
         .status(200)
         .json(
             new ApiResponse(
                 200,
-                { user: loggedInUser, accessToken, refreshToken },
+                { user: loggedInUser, accessToken, refreshToken, typeUser },
                 "User Logged In Successfully"
             )
         );

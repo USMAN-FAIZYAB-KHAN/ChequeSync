@@ -2,6 +2,8 @@ import dotenv from "dotenv";
 import connection from "./db/dbConnection.js";
 import { app } from "./app.js";
 
+const domain = '0.0.0.0'
+
 // Load environment variables
 dotenv.config({
     path: "./.env"
@@ -14,7 +16,7 @@ const port = process.env.PORT || 3000;
 
 connection()
     .then(() => {
-        app.listen(port, () => {
+        app.listen(port,domain, () => {
             console.log(`Server is running on port ${port}`);
         });
 
