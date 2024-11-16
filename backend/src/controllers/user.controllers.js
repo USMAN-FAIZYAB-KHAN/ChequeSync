@@ -27,26 +27,76 @@ const generateAccessAndRefreshToken = async (userID) => {
 };
 
 // Create a new user
+// export const registerUser = asyncHandler(async (req, res) => {
+//     const { userName, firstName, lastName, phoneNo, password, type } = req.body;
+
+//     console.log(userName, firstName, lastName, phoneNo, password, type)
+
+//     // Check if any required field is missing or empty
+//     if ([userName, firstName, lastName, phoneNo, password, type].some((field) => field?.trim() === "")) {
+//         throw new ApiError(400, "All Fields Are Required");
+//     }
+
+//     // Check if a user with the same username already exists
+//     const userExist = await User.findOne({
+//         userName: userName.toLowerCase(),
+//     });
+
+//     if (userExist) {
+//         throw new ApiError(409, "User with username already exists");
+//     }
+
+//     // Create the user
+//     const user = await User.create({
+//         userName: userName.toLowerCase(),
+//         firstName,
+//         lastName,
+//         phoneNo,
+//         password,
+//         type
+//     });
+
+//     // Fetch the created user excluding password and refreshToken fields
+//     const createUser = await User.findById(user._id).select("-password -refreshToken");
+
+//     if (!createUser) {
+//         throw new ApiError(500, "Something went wrong while creating User");
+//     }
+//     // createUser=null;
+
+//     // Respond with success
+//     return res.status(201).json(
+//         new ApiResponse(201, createUser, "User Created Successfully")
+//     );
+// });
+
+
 export const registerUser = asyncHandler(async (req, res) => {
-    const { userName, firstName, lastName, phoneNo, password, type } = req.body;
+    const { userEmail, firstName, lastName, phoneNo} = req.body;
+    const password = 'password'
+    const type = 'member'
+    console.log(userEmail, firstName, lastName, phoneNo, password, type)
 
     // Check if any required field is missing or empty
-    if ([userName, firstName, lastName, phoneNo, password, type].some((field) => field?.trim() === "")) {
+    if ([userEmail, firstName, lastName, phoneNo, password, type].some((field) => field?.trim() === "")) {
         throw new ApiError(400, "All Fields Are Required");
     }
 
-    // Check if a user with the same username already exists
+    // Check if a user with the same userEmail already exists
     const userExist = await User.findOne({
-        userName: userName.toLowerCase(),
+        userEmail: userEmail.toLowerCase(),
     });
 
     if (userExist) {
-        throw new ApiError(409, "User with username already exists");
+        console.log(`User with this ${userEmail} email already exist`)
+        return res.status(409).json(
+            new ApiResponse(409, {}, `User with this ${userEmail} email already exist`)
+        );
     }
 
     // Create the user
     const user = await User.create({
-        userName: userName.toLowerCase(),
+        userEmail: userEmail.toLowerCase(),
         firstName,
         lastName,
         phoneNo,
@@ -60,6 +110,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     if (!createUser) {
         throw new ApiError(500, "Something went wrong while creating User");
     }
+    // createUser=null;
 
     // Respond with success
     return res.status(201).json(
@@ -70,7 +121,7 @@ export const registerUser = asyncHandler(async (req, res) => {
 // Login a user
 export const loginUser = asyncHandler(async (req, res) => {
     const { userName, password } = req.body
-
+    console.log("in login backend")
     if (!userName) {
         throw new ApiError(400, "Username is required")
     }
@@ -90,7 +141,7 @@ export const loginUser = asyncHandler(async (req, res) => {
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
-
+    console.log(loggedInUser)
     return res
         .status(200)
         .json(
@@ -118,6 +169,71 @@ export const logoutUser = asyncHandler(async (req, res) => {
         .status(200)
         .json(new ApiResponse(200, {}, "User Logged Out Successfully"));
 })
+
+
+export const automaticSignUp = asyncHandler(async (req, res) => {
+    const usersDetail = req.body;
+    console.log(req.body)
+    if (!Array.isArray(usersDetail) || usersDetail.length === 0) {
+        throw new ApiError(404, "No user data provided");
+    }
+
+    const createdUsers = [];
+    
+    for (const userDetail of usersDetail) {
+        const userEmail = userDetail["UserEmail"];
+        let phone = userDetail["Phone Number"].toString();
+        const firstName = userDetail["First Name"];
+        const lastName = userDetail["Last Name"];
+        const password = 'password';
+        const type = 'member';
+
+
+        if (!phone.startsWith("0")) {
+            phone = "0" + phone;
+        }
+
+        if ([userEmail, firstName, lastName, phone, password, type].some((field) => !field || field.trim() === "")) {
+            throw new ApiError(400, "All fields are required");
+        }
+
+        // Check if user already exists
+        const existingUser = await User.findOne({ userEmail: userEmail.toLowerCase() });
+        if (existingUser) {
+            console.log(`User with this ${userEmail} email already exist`)
+            return res.status(409).json(
+                new ApiResponse(409, {}, `User with this ${userEmail} email already exist`)
+            );
+        }
+
+        // Create the user
+        const user = await User.create({
+            userEmail: userEmail.toLowerCase(),
+            firstName,
+            lastName,
+            phoneNo: phone,
+            password,
+            type,
+        });
+
+        // Fetch the created user excluding password and refreshToken fields
+        const createdUser = await User.findById(user._id).select("-password -refreshToken");
+
+        if (!createdUser) {
+            throw new ApiError(500, "Error creating user");
+        }
+
+        createdUsers.push(createdUser);
+    }
+
+    
+
+    // Return response after all users are created
+    return res
+        .status(200)
+        .json(new ApiResponse(200, createdUsers, "Users created successfully"));
+});
+
 
 
 

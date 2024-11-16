@@ -1,3 +1,9 @@
 id = 671fdecbd05b11f34db64734
 userName = testuser123
 password = password
+
+
+
+id = 67334eb57737198f6556ec4d
+userName = branchmanager
+password = branchmanager
