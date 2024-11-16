@@ -2,6 +2,7 @@ import User from '../models/user.models.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { ApiError } from '../utils/ApiError.js';
+import jwt from "jsonwebtoken";
 
 const generateAccessAndRefreshToken = async (userID) => {
     try {
@@ -108,14 +109,20 @@ export const registerUser = asyncHandler(async (req, res) => {
     const createUser = await User.findById(user._id).select("-password -refreshToken");
 
     if (!createUser) {
-        throw new ApiError(500, "Something went wrong while creating User");
+        return res.status(409).json({
+            success: false,
+            message: "wrong"
+        });
     }
     // createUser=null;
+
+    console.log(createUser)
 
     // Respond with success
     return res.status(201).json(
         new ApiResponse(201, createUser, "User Created Successfully")
     );
+
 });
 
 // Login a user
@@ -131,12 +138,18 @@ export const loginUser = asyncHandler(async (req, res) => {
     })
 
     if (!user) {
-        throw new ApiError(404, "User does not exist")
+        return res.status(409).json({
+            success: false,
+            message: "not_exists"
+        });
     }
 
     const isPasswordValid = await user.isPasswordCorrect(password)
     if (!isPasswordValid) {
-        throw new ApiError(401, "Invalid User Credentials")
+        return res.status(409).json({
+            success: false,
+            message: "inv_cred"
+        });
     }
 
     const { accessToken, refreshToken } = await generateAccessAndRefreshToken(user._id);
@@ -147,7 +160,7 @@ export const loginUser = asyncHandler(async (req, res) => {
         .json(
             new ApiResponse(
                 200,
-                { user: loggedInUser, accessToken, refreshToken },
+                { user: loggedInUser, accessToken, refreshToken, typeUser },
                 "User Logged In Successfully"
             )
         );
