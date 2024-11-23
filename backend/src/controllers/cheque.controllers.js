@@ -8,25 +8,29 @@ import users from '../globals/global.js'
 
 // Create a new cheque
 export const createCheque = asyncHandler(async (req, res) => {
-    const { memberId, month, amount } = req.body;
+    const { memberId, month, image } = req.body;
 
-    if([memberId, month, amount].some((field) => field?.trim() === "")) {
+    if([memberId].some((field) => field?.trim() === "")) {
         throw new ApiError(400, 'All fields are required');
     }
 
     const chequeExist = await Cheque.findOne({ memberId, month });
 
-    if(chequeExist) {
-        throw new ApiError(409, 'Cheque already exists');
-    }
+    // if(chequeExist) {
+    //     throw new ApiError(409, 'Cheque already exists');
+    // }
+
+    const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+    const buffer = Buffer.from(base64Data, 'base64'); 
 
     const cheque = await Cheque.create({
         memberId,
         month,
-        amount,
-        image: req.file.buffer,
-        status: 'submitted'
+        image: buffer,
+        status: 'posted'
     });
+
+    console.log(cheque);
 
     if (!cheque) {
         throw new ApiError(500, 'Something went wrong while creating Cheque');
@@ -42,6 +46,13 @@ export const createCheque = asyncHandler(async (req, res) => {
 // Get all cheques
 export const getAllCheques = asyncHandler(async (req, res) => {
     const cheques = await Cheque.find().populate('memberId'); // Populate memberId if needed
+    return new ApiResponse(200, cheques);
+});
+
+// Get all the cheques of user id
+export const getChequesByUserId = asyncHandler(async (req, res) => {
+    const { memberId } = req.params;
+    const cheques = await Cheque.find({ memberId: memberId }).populate('memberId'); // Populate memberId if needed
     return new ApiResponse(200, cheques);
 });
 
