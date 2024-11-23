@@ -2,6 +2,8 @@ import Cheque from '../models/cheque.models.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import { ApiError } from '../utils/ApiError.js';
+import { io } from '../index.js';
+import users from '../globals/global.js'
 
 
 // Create a new cheque

@@ -73,7 +73,7 @@ const generateAccessAndRefreshToken = async (userID) => {
 
 
 export const registerUser = asyncHandler(async (req, res) => {
-    const { userEmail, firstName, lastName, phoneNo} = req.body;
+    const { userEmail, firstName, lastName, phoneNo } = req.body;
     const password = 'password'
     const type = 'member'
     console.log(userEmail, firstName, lastName, phoneNo, password, type)
@@ -127,14 +127,15 @@ export const registerUser = asyncHandler(async (req, res) => {
 
 // Login a user
 export const loginUser = asyncHandler(async (req, res) => {
-    const { userName, password } = req.body
+    const { userEmail, password } = req.body
     console.log("in login backend")
-    if (!userName) {
-        throw new ApiError(400, "Username is required")
+    console.log(userEmail, password)
+    if (!userEmail) {
+        throw new ApiError(400, "userEmail is required")
     }
 
     const user = await User.findOne({
-        userName: userName.toLowerCase()
+        userEmail: userEmail.toLowerCase()
     })
 
     if (!user) {
@@ -160,7 +161,7 @@ export const loginUser = asyncHandler(async (req, res) => {
         .json(
             new ApiResponse(
                 200,
-                { user: loggedInUser, accessToken, refreshToken, typeUser },
+                { user: loggedInUser, accessToken, refreshToken },
                 "User Logged In Successfully"
             )
         );
@@ -192,7 +193,7 @@ export const automaticSignUp = asyncHandler(async (req, res) => {
     }
 
     const createdUsers = [];
-    
+
     for (const userDetail of usersDetail) {
         const userEmail = userDetail["UserEmail"];
         let phone = userDetail["Phone Number"].toString();
@@ -239,7 +240,7 @@ export const automaticSignUp = asyncHandler(async (req, res) => {
         createdUsers.push(createdUser);
     }
 
-    
+
 
     // Return response after all users are created
     return res

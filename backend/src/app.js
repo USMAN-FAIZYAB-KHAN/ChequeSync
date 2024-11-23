@@ -17,6 +17,10 @@ app.use(express.urlencoded({
 app.use(express.static("public"))
 
 
+app.get('/', (req, res) => {
+    res.json("hello world")
+})
+
 //Routes
 import userRouter from "./routes/user.routes.js"
 import chequeRouter from "./routes/cheque.routes.js"
