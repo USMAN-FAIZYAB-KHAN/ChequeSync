@@ -1,5 +1,6 @@
 
 import mongoose from 'mongoose';
+import Member from './member.models.js';
 
 const Schema = mongoose.Schema;
 

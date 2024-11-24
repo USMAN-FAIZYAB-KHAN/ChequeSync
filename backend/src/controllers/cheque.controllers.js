@@ -10,6 +10,8 @@ import users from '../globals/global.js'
 export const createCheque = asyncHandler(async (req, res) => {
     const { memberId, month, image } = req.body;
 
+    console.log("ojdp");
+    
     if([memberId].some((field) => field?.trim() === "")) {
         throw new ApiError(400, 'All fields are required');
     }
@@ -29,8 +31,10 @@ export const createCheque = asyncHandler(async (req, res) => {
         image: buffer,
         status: 'posted'
     });
+    
 
     console.log(cheque);
+
 
     if (!cheque) {
         throw new ApiError(500, 'Something went wrong while creating Cheque');
@@ -51,23 +55,24 @@ export const getAllCheques = asyncHandler(async (req, res) => {
 
 // Get all the cheques of user id
 export const getChequesByUserId = asyncHandler(async (req, res) => {
+    console.log(req.params)
     const { memberId } = req.params;
     const cheques = await Cheque.find({ memberId: memberId }).populate('memberId'); // Populate memberId if needed
-    console.log(cheques);
+    console.log("cheques", cheques)
     return res.status(200).json(
         new ApiResponse(200, cheques, '')
-    );
+    );;
 });
 
 // Get a cheque by ID
-export const getChequeById = asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const cheque = await Cheque.findById(id).populate('memberId'); // Populate memberId if needed
-    if (!cheque) {
-        throw new ApiError(404, 'Cheque not found');
-    }
-    return new ApiResponse(200, cheque);
-});
+// export const getChequeById = asyncHandler(async (req, res) => {
+//     const { memberId } = req.params;
+//     const cheque = await Cheque.findById(id).populate('memberId'); // Populate memberId if needed
+//     if (!cheque) {
+//         throw new ApiError(404, 'Cheque not found');
+//     }
+//     return new ApiResponse(200, cheque);
+// });
 
 // Update a cheque by ID
 export const updateCheque = asyncHandler(async (req, res) => {
