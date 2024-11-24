@@ -3,6 +3,7 @@ import {
     createCheque, 
     getChequesByUserId,
     getPostedCheques,
+    updatechequestatus,
     getAllCheques
 } from "../controllers/cheque.controllers.js";
 
@@ -12,5 +13,6 @@ chequeRouter.post('/create', createCheque);
 chequeRouter.get('/membercheque/:memberId', getChequesByUserId);
 chequeRouter.get('/memberpostedcheque', getPostedCheques);
 chequeRouter.get('/allmembercheques', getAllCheques);
+chequeRouter.post('/updatechequestatus', updatechequestatus);
 
 export default chequeRouter
