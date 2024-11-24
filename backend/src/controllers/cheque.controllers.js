@@ -151,12 +151,14 @@ export const getChequesByUserId = asyncHandler(async (req, res) => {
 
 
 // Update a cheque by ID for receive
-export const receivedCheque = asyncHandler(async(req, res)=>{
-    const {messageId, type} = req.body
+export const updatechequestatus = asyncHandler(async(req, res)=>{
+    const {messageId, status} = req.body
 
-    if (type.toLowerCase().includes("receive")) {
-        const chequeData = await Cheque.find({})
-    } 
+    const result = await Cheque.updateOne(
+      { _id: messageId },
+      { $set: { status } }
+    );
+    res.status(200).json(new ApiResponse(200,{message :"Cheque status updated successfully."}, ''));
 })
 
 
