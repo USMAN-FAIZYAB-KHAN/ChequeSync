@@ -10,7 +10,7 @@ import users from '../globals/global.js'
 export const createCheque = asyncHandler(async (req, res) => {
     const { memberId, month, image } = req.body;
 
-    console.log("ojdp");
+  
     
     if([memberId].some((field) => field?.trim() === "")) {
         throw new ApiError(400, 'All fields are required');
