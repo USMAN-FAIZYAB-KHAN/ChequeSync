@@ -2,7 +2,7 @@
 
 
 import mongoose from 'mongoose';
-import Member from './member.models.js';
+import User from './user.models.js';
 
 const Schema = mongoose.Schema;
 
@@ -10,7 +10,7 @@ const Schema = mongoose.Schema;
 const statusTypes = ['posted', 'received', 'approved', 'rejected'];
 
 const chequeSchema = new Schema({
-    memberId: { type: Schema.Types.ObjectId, ref: 'Member', required: true },
+    memberId: { type: Schema.Types.ObjectId, ref: User, required: true },
     image: { type: Buffer, required: true },
     processedOn: { type: Date, default: null },
     deliveryDate: { type: Date, default: null },
