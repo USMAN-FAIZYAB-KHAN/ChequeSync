@@ -53,7 +53,10 @@ export const getAllCheques = asyncHandler(async (req, res) => {
 export const getChequesByUserId = asyncHandler(async (req, res) => {
     const { memberId } = req.params;
     const cheques = await Cheque.find({ memberId: memberId }).populate('memberId'); // Populate memberId if needed
-    return new ApiResponse(200, cheques);
+    console.log(cheques);
+    return res.status(200).json(
+        new ApiResponse(200, cheques, '')
+    );
 });
 
 // Get a cheque by ID
