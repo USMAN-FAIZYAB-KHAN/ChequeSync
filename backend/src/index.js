@@ -39,6 +39,7 @@ connection()
 // Socket.IO connection
 io.on("connection", (socket) => {
     console.log("New client connected:", socket.id);
+    console.log(users)
     
 
     // Listen for user login event and associate the socket ID with the user ID

@@ -5,6 +5,23 @@ import { ApiError } from "../utils/ApiError.js";
 import { io } from "../index.js";
 import users from "../globals/global.js";
 import { getMonthName } from "../globals/global.js";
+import userModels from "../models/user.models.js";
+import notificationModels from "../models/notification.models.js";
+
+const months = {
+    0: "January",
+    1: "February",
+    2:"March",
+    3:"April",
+    4:"May",
+    5:"June",
+    6:"July",
+    7:"August",
+    8:"September",
+    9:"October",
+    10:"November",
+    11:"December"
+}
 
 
 
@@ -38,11 +55,34 @@ export const createCheque = asyncHandler(async (req, res) => {
     status: "posted",
   });
 
-  console.log(cheque);
+//   console.log(cheque);
 
   if (!cheque) {
     throw new ApiError(500, "Something went wrong while creating Cheque");
   }
+
+  const chequeManager = await userModels.find({type:'chequeManager'})
+  const member = await userModels.find({_id:memberId})
+
+  const msg = `${member[0].userEmail} has posted the check for month ${months[month-1]}`
+  const notification = await notificationModels.create({
+    receiverMember: chequeManager[0]._id,
+    message:msg,
+    originator: member[0]._id
+  })
+
+  console.log(notification)
+ 
+  if (chequeManager[0]._id) {
+
+
+    if (users[chequeManager[0]._id]) {
+        console.log("in 2")
+        io.to(users[chequeManager[0]._id]).emit('receiveNotification', {notification:notification})
+    }
+  }
+
+//   io.to(users[])
 
   const newAccessToken = req.token ? req.token : null;
 
@@ -102,7 +142,7 @@ export const getPostedCheques = asyncHandler(async (req, res) => {
 
 
 export const getChequesByUserId = asyncHandler(async (req, res) => {
-  console.log(req.params);
+//   console.log(req.params);
   const { memberId } = req.params;
   const cheques = await Cheque.find({ memberId: memberId }).populate(
     "memberId"
