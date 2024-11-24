@@ -1,10 +1,13 @@
 import { Router } from "express";
-import { createCheque } from "../controllers/cheque.controllers.js";
-import { upload } from "../middlewares/upload.middlewares.js";
+import { 
+    createCheque, 
+    getChequesByUserId 
+} from "../controllers/cheque.controllers.js";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
 
 const chequeRouter = Router();
 
-chequeRouter.post('/create', verifyJWT, upload.single('image'), createCheque);
+chequeRouter.post('/create', createCheque);
+chequeRouter.get('/membercheque/:memberId', getChequesByUserId);
 
 export default chequeRouter
