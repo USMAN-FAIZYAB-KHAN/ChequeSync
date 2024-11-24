@@ -53,16 +53,36 @@ export const getAllCheques = asyncHandler(async (req, res) => {
     return new ApiResponse(200, cheques);
 });
 
-// Get all the cheques of user id
 export const getChequesByUserId = asyncHandler(async (req, res) => {
-    console.log(req.params)
     const { memberId } = req.params;
-    const cheques = await Cheque.find({ memberId: memberId }).populate('memberId'); // Populate memberId if needed
-    console.log("cheques", cheques)
+
+    // Check if memberId is provided
+    if (!memberId?.trim()) {
+        throw new ApiError(400, "Member ID is required");
+    }
+
+    // Fetch cheques for the given member ID
+    const cheques = await Cheque.find({ memberId })
+        .populate('memberId') // Include member details if necessary
+        .lean(); // Convert Mongoose documents to plain JavaScript objects
+
+    if (!cheques || cheques.length === 0) {
+        throw new ApiError(404, "No cheques found for this member");
+    }
+
+    // Convert binary images to base64
+    const chequesWithImages = cheques.map(cheque => ({
+        ...cheque,
+        image: cheque.image
+            ? `data:image/jpeg;base64,${cheque.image.buffer.toString('base64')}`
+            : null, // Handle cases where image might be null
+    }));
+
     return res.status(200).json(
-        new ApiResponse(200, cheques, '')
-    );;
+        new ApiResponse(200, chequesWithImages, "Cheques retrieved successfully")
+    );
 });
+
 
 // Get a cheque by ID
 // export const getChequeById = asyncHandler(async (req, res) => {
