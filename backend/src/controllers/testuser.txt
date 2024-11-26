@@ -12,3 +12,7 @@ password = branchmanager
 id = 67350c318bf3ff24bfc3a74e
 userEmail = owais40107@cloud.neduet.edu.pk
 password = password
+
+id = 67350023a70877fe03ff504e
+userEmail = chequemanager@gmail.com
+password = password

@@ -9,6 +9,10 @@ import userModels from "../models/user.models.js";
 import notificationModels from "../models/notification.models.js";
 
 
+
+
+
+
 // Create a new cheque
 export const createCheque = asyncHandler(async (req, res) => {
   const { memberId, month, image } = req.body;
@@ -45,7 +49,7 @@ export const createCheque = asyncHandler(async (req, res) => {
   const chequeManager = await userModels.find({type:'chequeManager'})
   const member = await userModels.find({_id:memberId})
 
-  const msg = `${member[0].userEmail} has posted the check for month ${months[month-1]}`
+  const msg = `${member[0].userEmail} has posted the check for month ${getMonthName(month)}`
   const notification = await notificationModels.create({
     receiverMember: chequeManager[0]._id,
     message:msg,
@@ -58,7 +62,7 @@ export const createCheque = asyncHandler(async (req, res) => {
 
 
     if (users[chequeManager[0]._id]) {
-        console.log("in 2")
+        console.log("in 2", chequeManager, users)
         io.to(users[chequeManager[0]._id]).emit('receiveNotification', {notification:notification})
     }
   }
@@ -142,6 +146,29 @@ export const getPostedCheques = asyncHandler(async (req, res) => {
 });
 
 
+// Get Posted Cheques
+export const getReceivedCheques = asyncHandler(async (req, res) => {
+  const cheques = await Cheque.find({ status: "received" }).populate("memberId");
+  const formattedCheques = cheques.map((cheque) => {
+    const user = cheque.memberId;
+    const firstName = user ? user.firstName : "Unknown";
+    const lastName = user ? user.lastName : "User";
+    return {
+      _id: cheque._id,
+      sender: `${firstName} ${lastName}`,
+      image: `data:image/png;base64,${cheque.image.toString("base64")}`,
+      message: user ? `${firstName}’s cheque image for ${getMonthName(cheque.month)}.` : 'No Message',
+      time: new Date(cheque.createdAt).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
+    };
+  });
+
+  return res.status(200).json(new ApiResponse(200, { formattedCheques }, ""));
+});
+
+
 export const getChequesByUserId = asyncHandler(async (req, res) => {
 //   console.log(req.params);
   const { memberId } = req.params;
@@ -169,12 +196,24 @@ export const getChequesByUserId = asyncHandler(async (req, res) => {
 
 // Update a cheque by ID for receive
 export const updatechequestatus = asyncHandler(async (req, res) => {
-  const { messageId, status } = req.body
+  const { messageId, status, message, image } = req.body
+  console.log(message, image)
+  console.log("in backend")
+  let result;
 
-  const result = await Cheque.updateOne(
-    { _id: messageId },
-    { $set: { status } }
-  );
+  if (message && image) {
+     result = await Cheque.updateOne(
+      { _id: messageId },
+      { $set: { status, image } }
+    );
+  } else {
+     result = await Cheque.updateOne(
+      { _id: messageId },
+      { $set: { status } }
+    );
+  }
+
+  console.log(result)
   res
     .status(200)
     .json(

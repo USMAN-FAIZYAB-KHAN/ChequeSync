@@ -4,7 +4,8 @@ import {
     getChequesByUserId,
     getPostedCheques,
     updatechequestatus,
-    getAllCheques
+    getAllCheques,
+    getReceivedCheques
 } from "../controllers/cheque.controllers.js";
 import { 
     getNotification 
@@ -18,5 +19,6 @@ chequeRouter.get('/memberpostedcheque', getPostedCheques);
 chequeRouter.get('/allmembercheques', getAllCheques);
 chequeRouter.get('/get-notifications', getNotification);
 chequeRouter.post('/updatechequestatus', updatechequestatus);
+chequeRouter.get('/branchReceivedCheques', getReceivedCheques);
 
 export default chequeRouter
