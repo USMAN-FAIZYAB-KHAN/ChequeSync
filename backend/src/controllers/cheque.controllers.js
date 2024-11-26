@@ -8,11 +8,6 @@ import { getMonthName } from "../globals/global.js";
 import userModels from "../models/user.models.js";
 import notificationModels from "../models/notification.models.js";
 
-
-
-
-
-
 // Create a new cheque
 export const createCheque = asyncHandler(async (req, res) => {
   const { memberId, month, image } = req.body;
@@ -40,34 +35,34 @@ export const createCheque = asyncHandler(async (req, res) => {
     status: "posted",
   });
 
-//   console.log(cheque);
+  //   console.log(cheque);
 
   if (!cheque) {
     throw new ApiError(500, "Something went wrong while creating Cheque");
   }
 
-  const chequeManager = await userModels.find({type:'chequeManager'})
-  const member = await userModels.find({_id:memberId})
+  const chequeManager = await userModels.find({ type: "chequeManager" });
+  const member = await userModels.find({ _id: memberId });
 
-  const msg = `${member[0].userEmail} has posted the check for month ${getMonthName(month)}`
+  const msg = `${member[0].userEmail} has posted the check for month ${getMonthName(month)}`;
   const notification = await notificationModels.create({
     receiverMember: chequeManager[0]._id,
-    message:msg,
-    originator: member[0]._id
-  })
+    message: msg,
+    originator: member[0]._id,
+  });
 
-  console.log(notification)
- 
+  console.log(notification);
+
   if (chequeManager[0]._id) {
-
-
     if (users[chequeManager[0]._id]) {
-        console.log("in 2", chequeManager, users)
-        io.to(users[chequeManager[0]._id]).emit('receiveNotification', {notification:notification})
+      console.log("in 2", chequeManager, users);
+      io.to(users[chequeManager[0]._id]).emit("receiveNotification", {
+        notification: notification,
+      });
     }
   }
 
-//   io.to(users[])
+  //   io.to(users[])
 
   const newAccessToken = req.token ? req.token : null;
 
@@ -100,15 +95,15 @@ export const getAllCheques = asyncHandler(async (req, res) => {
     December: 12,
   };
 
-  const monthNumber = monthDict[month]; 
+  const monthNumber = monthDict[month];
   const cheques = await Cheque.find({ month: monthNumber }).populate(
     "memberId"
   );
-  console.log(cheques[0].month)
+  console.log(cheques[0].month);
   const filteredCheques = cheques.filter((item) => {
     const chequeyear = new Date(item.updatedAt).getFullYear();
-    return chequeyear === parseInt(year); 
-});
+    return chequeyear === parseInt(year);
+  });
 
   const formattedCheques = filteredCheques.map((cheque) => ({
     id: cheque._id.toString(),
@@ -117,7 +112,7 @@ export const getAllCheques = asyncHandler(async (req, res) => {
     year,
     status: cheque.status,
   }));
-  console.log(formattedCheques[0], formattedCheques.length)
+  console.log(formattedCheques[0], formattedCheques.length);
   return res
     .status(200)
     .json(new ApiResponse(200, { cheques: formattedCheques }, ""));
@@ -134,10 +129,12 @@ export const getPostedCheques = asyncHandler(async (req, res) => {
       _id: cheque._id,
       sender: `${firstName} ${lastName}`,
       image: `data:image/png;base64,${cheque.image.toString("base64")}`,
-      message: user ? `${firstName}’s cheque image for ${getMonthName(cheque.month)}.` : 'No Message',
+      message: user
+        ? `${firstName}’s cheque image for ${getMonthName(cheque.month)}.`
+        : "No Message",
       time: new Date(cheque.createdAt).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
+        hour: "2-digit",
+        minute: "2-digit",
       }),
     };
   });
@@ -145,10 +142,11 @@ export const getPostedCheques = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, { formattedCheques }, ""));
 });
 
-
 // Get Posted Cheques
 export const getReceivedCheques = asyncHandler(async (req, res) => {
-  const cheques = await Cheque.find({ status: "received" }).populate("memberId");
+  const cheques = await Cheque.find({ status: "received" }).populate(
+    "memberId"
+  );
   const formattedCheques = cheques.map((cheque) => {
     const user = cheque.memberId;
     const firstName = user ? user.firstName : "Unknown";
@@ -157,10 +155,12 @@ export const getReceivedCheques = asyncHandler(async (req, res) => {
       _id: cheque._id,
       sender: `${firstName} ${lastName}`,
       image: `data:image/png;base64,${cheque.image.toString("base64")}`,
-      message: user ? `${firstName}’s cheque image for ${getMonthName(cheque.month)}.` : 'No Message',
+      message: user
+        ? `${firstName}’s cheque image for ${getMonthName(cheque.month)}.`
+        : "No Message",
       time: new Date(cheque.createdAt).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
+        hour: "2-digit",
+        minute: "2-digit",
       }),
     };
   });
@@ -168,13 +168,12 @@ export const getReceivedCheques = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, { formattedCheques }, ""));
 });
 
-
 export const getChequesByUserId = asyncHandler(async (req, res) => {
-//   console.log(req.params);
+  //   console.log(req.params);
   const { memberId } = req.params;
   const cheques = await Cheque.find({ memberId: memberId }).populate(
     "memberId"
-  ); 
+  );
   const formattedCheques = cheques.map((cheque) => {
     const memberName = cheque.memberId.firstName;
     const month = cheque.month;
@@ -182,12 +181,12 @@ export const getChequesByUserId = asyncHandler(async (req, res) => {
     const image = `data:image/png;base64,${cheque.image.toString("base64")}`;
     const status = cheque.status;
     return {
-      id: cheque._id.toString(),  
+      id: cheque._id.toString(),
       memberName,
       month,
       year,
       status,
-      image
+      image,
     };
   });
 
@@ -196,24 +195,30 @@ export const getChequesByUserId = asyncHandler(async (req, res) => {
 
 // Update a cheque by ID for receive
 export const updatechequestatus = asyncHandler(async (req, res) => {
-  const { messageId, status, message, image } = req.body
-  console.log(message, image)
-  console.log("in backend")
+  let { messageId, status, message, image } = req.body;
+  let buffer;
+  if (image) {
+    const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
+    console.log("base64", base64Data);
+    buffer = Buffer.from(base64Data, "base64");
+  }
+  console.log("in backend");
+  // console.log('BackendBranchMnager--------------------------', buffer)
   let result;
-
+  console.log("message......................",message,"image....................",buffer)
   if (message && image) {
-     result = await Cheque.updateOne(
+    console.log("qwjedqwojdoqwdmqwjeido nwedi")
+    image = buffer
+    result = await Cheque.updateOne(
       { _id: messageId },
-      { $set: { status, image } }
+      { $set: { status, image} }
     );
+    console.log(result)
   } else {
-     result = await Cheque.updateOne(
-      { _id: messageId },
-      { $set: { status } }
-    );
+    result = await Cheque.updateOne({ _id: messageId }, { $set: { status } });
   }
 
-  console.log(result)
+  console.log(result);
   res
     .status(200)
     .json(
