@@ -195,30 +195,90 @@ export const getChequesByUserId = asyncHandler(async (req, res) => {
 
 // Update a cheque by ID for receive
 export const updatechequestatus = asyncHandler(async (req, res) => {
-  let { messageId, status, message, image } = req.body;
+  let { messageId, status, message, image, Role } = req.body;
+  console.log("In ssss", Role)
   let buffer;
   if (image) {
     const base64Data = image.replace(/^data:image\/\w+;base64,/, "");
     console.log("base64", base64Data);
     buffer = Buffer.from(base64Data, "base64");
   }
-  console.log("in backend");
-  // console.log('BackendBranchMnager--------------------------', buffer)
+
   let result;
-  console.log("message......................",message,"image....................",buffer)
+
   if (message && image) {
     console.log("qwjedqwojdoqwdmqwjeido nwedi")
     image = buffer
     result = await Cheque.updateOne(
       { _id: messageId },
-      { $set: { status, image} }
+      { $set: { status, image } }
     );
     console.log(result)
   } else {
     result = await Cheque.updateOne({ _id: messageId }, { $set: { status } });
   }
 
-  console.log(result);
+  console.log("In ssss")
+
+  if (Role && Role.toLowerCase() == "chequemanager") {
+
+    const chequeManager = await userModels.find({ type: "chequeManager" })
+    const memberCheque = await Cheque.findById(messageId);
+    console.log(memberCheque)
+    const member = await userModels.findById(memberCheque.memberId);
+    console.log(member, memberCheque._id)
+
+    const msg = `Cheque Manager has ${status} the check for month ${getMonthName(memberCheque.month)}`;
+    const notification = await notificationModels.create({
+      receiverMember: member._id,
+      message: msg,
+      originator: chequeManager[0]._id,
+    });
+    console.log("i1")
+    io.to(users[member._id]).emit("receiveNotification", {
+      notification: notification,
+    });
+    console.log("i2")
+
+  }
+
+  else if (Role && Role.toLowerCase() == "branchmanager") {
+
+    const branchManager = await userModels.find({ type: "branchManager" })
+    const chequeManager = await userModels.find({ type: "chequeManager" })
+    const memberCheque = await Cheque.findById(messageId);
+    console.log(memberCheque)
+    const member = await userModels.findById(memberCheque.memberId);
+    console.log(member, memberCheque._id, chequeManager)
+
+    const msg = `branch Manager has ${status} the check of ${member.firstName + " " + member.lastName} for month ${getMonthName(memberCheque.month)}`;
+
+    console.log("i1")
+    for (const user of [chequeManager[0], member]) {
+      try {
+        // Create notification
+        const notification = await notificationModels.create({
+          receiverMember: user._id,
+          message: msg,
+          originator: branchManager[0]._id,
+        });
+
+        // Emit notification if user is connected
+        if (users[user._id]) {
+          io.to(users[user._id]).emit("receiveNotification", {
+            notification: notification,
+          });
+        } else {
+          console.warn(`User with ID ${user._id} is not connected.`);
+        }
+      } catch (error) {
+        console.error(`Error processing notification for user ${user._id}:`, error.message);
+      }
+    }
+
+    console.log("i2")
+  }
+
   res
     .status(200)
     .json(
