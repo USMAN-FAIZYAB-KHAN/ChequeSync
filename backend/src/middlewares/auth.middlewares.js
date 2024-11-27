@@ -6,12 +6,13 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 export const verifyJWT = asyncHandler(async (req, _, next) => {
     try {
         const accessToken = req.header("Authorization")?.replace("Bearer ", "");
-
+        console.log("acc", accessToken)
         const userId = jwt.decode(accessToken)?._id;
 
         const user = await User.findOne({ _id: userId });
+        console.log(user)
         const refreshToken = user?.refreshToken;
-        console.log(refreshToken);
+        console.log("ref", refreshToken);
 
         if (!accessToken) {
             throw new ApiError(401, "Unauthorized request: Access token required");

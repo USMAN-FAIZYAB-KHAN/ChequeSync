@@ -9,7 +9,7 @@ export const getNotification = asyncHandler(async (req, res) => {
     const {memberType, id} = req.query;
 
 
-    console.log("MemberType:", memberType, id);
+    console.log("MemberType:", memberType, id, getNotification);
 
 
     if (!memberType) {

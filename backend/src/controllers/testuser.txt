@@ -16,3 +16,7 @@ password = password
 id = 67350023a70877fe03ff504e
 userEmail = chequemanager@gmail.com
 password = password
+
+
+userEmail = owaisiqbal2003@gmail.com
+password = password
