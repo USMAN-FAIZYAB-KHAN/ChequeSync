@@ -249,7 +249,7 @@ export const automaticSignUp = asyncHandler(async (req, res) => {
         service: 'gmail',  // You can use other services like SendGrid, SES, etc.
         auth: {
             user: 'owaisiqbal2021@gmail.com', // Replace with your email
-            pass: "dkay alnh jryv utos",  // Replace with your email password or app-specific password
+            pass: "", 
         },
     });
 
